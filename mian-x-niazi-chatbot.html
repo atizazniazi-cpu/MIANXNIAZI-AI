@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MIAN x NIAZI</title>
+<style>
+  :root{
+    --ink:#14171c;
+    --surface:#1b1f26;
+    --surface-2:#232833;
+    --gold:#c9a227;
+    --gold-soft:#e7c65b;
+    --text:#eeeae2;
+    --muted:#8b93a3;
+    --bubble-user:#2a3040;
+    --border:#2c3140;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Segoe UI', Inter, -apple-system, sans-serif;
+    background:var(--ink);
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    overflow:hidden;
+  }
+
+  /* Header */
+  header{
+    padding:18px 24px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--surface);
+    flex-shrink:0;
+  }
+  .brand{
+    font-family:Georgia, 'Times New Roman', serif;
+    font-size:22px;
+    letter-spacing:0.5px;
+  }
+  .brand span{ color:var(--gold); }
+  .tagline{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  #clearBtn{
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--muted);
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:13px;
+    cursor:pointer;
+    transition:border-color .15s, color .15s;
+  }
+  #clearBtn:hover{ border-color:var(--gold); color:var(--gold-soft); }
+
+  /* Chat area */
+  #chat{
+    flex:1;
+    overflow-y:auto;
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .row{ display:flex; }
+  .row.user{ justify-content:flex-end; }
+  .row.bot{ justify-content:flex-start; }
+
+  .bubble{
+    max-width:72%;
+    padding:12px 16px;
+    border-radius:14px;
+    line-height:1.55;
+    font-size:15px;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+  }
+  .row.user .bubble{
+    background:var(--bubble-user);
+    border:1px solid var(--border);
+    border-bottom-right-radius:4px;
+  }
+  .row.bot .bubble{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-bottom-left-radius:4px;
+  }
+  .bubble img{
+    max-width:100%;
+    border-radius:10px;
+    margin-top:8px;
+    display:block;
+  }
+  .label{
+    font-size:11px;
+    color:var(--muted);
+    margin-bottom:4px;
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+  }
+
+  .typing{ display:flex; gap:4px; padding:4px 0; }
+  .typing span{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--gold);
+    animation:blink 1.2s infinite ease-in-out;
+  }
+  .typing span:nth-child(2){ animation-delay:.2s; }
+  .typing span:nth-child(3){ animation-delay:.4s; }
+  @keyframes blink{ 0%,80%,100%{opacity:.25;} 40%{opacity:1;} }
+
+  /* Empty state */
+  #empty{
+    margin:auto;
+    text-align:center;
+    color:var(--muted);
+    max-width:420px;
+  }
+  #empty .brand{ font-size:30px; display:block; margin-bottom:10px;}
+  #empty p{ font-size:14px; line-height:1.6; }
+
+  /* Input bar */
+  #inputBar{
+    border-top:1px solid var(--border);
+    padding:16px 24px 20px;
+    background:var(--surface);
+    flex-shrink:0;
+  }
+  #inputRow{
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:8px 8px 8px 10px;
+  }
+  #inputRow:focus-within{ border-color:var(--gold); }
+  #attachBtn{
+    flex-shrink:0;
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    border:1px solid var(--border);
+    background:transparent;
+    color:var(--muted);
+    font-size:20px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:border-color .15s, color .15s;
+  }
+  #attachBtn:hover{ border-color:var(--gold); color:var(--gold-soft); }
+  #msgInput{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--text);
+    font-size:15px;
+    resize:none;
+    max-height:120px;
+    line-height:1.4;
+    padding:8px 0;
+    font-family:inherit;
+  }
+  #msgInput::placeholder{ color:var(--muted); }
+  #sendBtn{
+    flex-shrink:0;
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    background:var(--gold);
+    color:#14171c;
+    border:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  #sendBtn svg{ width:18px; height:18px; }
+  #sendBtn:hover{ background:var(--gold-soft); }
+  #sendBtn:disabled{ background:var(--border); color:var(--muted); cursor:not-allowed; }
+
+  #attachPreview{
+    display:none;
+    align-items:center;
+    gap:8px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:6px 10px;
+    margin-bottom:8px;
+    font-size:12px;
+    color:var(--muted);
+    width:fit-content;
+  }
+  #attachPreview img{
+    width:34px; height:34px;
+    object-fit:cover;
+    border-radius:6px;
+  }
+  #attachPreview button{
+    background:transparent;
+    border:none;
+    color:var(--muted);
+    font-size:16px;
+    cursor:pointer;
+    padding:0 4px;
+  }
+  #attachPreview button:hover{ color:var(--gold-soft); }
+  .hint{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:8px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="brand">MIAN <span>x</span> NIAZI</div>
+  </div>
+  <button id="clearBtn">New Chat</button>
+</header>
+
+<div id="chat">
+  <div id="empty">
+    <span class="brand">MIAN <span style="color:#c9a227">x</span> NIAZI</span>
+    <p>Kuch bhi poochein — likh kar ya "image banao ..." keh kar tasveer bhi mangwayein.</p>
+  </div>
+</div>
+
+<div id="inputBar">
+  <div id="attachPreview">
+    <img id="attachThumb" src="" alt="attached image">
+    <span id="attachName"></span>
+    <button id="removeAttach">✕</button>
+  </div>
+  <div id="inputRow">
+    <input type="file" id="fileInput" accept="image/*" style="display:none">
+    <button id="attachBtn" title="Image attach karein">+</button>
+    <textarea id="msgInput" rows="1" placeholder="Apna sawaal likhein... (ya 'image banao: ek sher' likhein)"></textarea>
+    <button id="sendBtn" title="Send">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="19" x2="12" y2="5"></line>
+        <polyline points="5 12 12 5 19 12"></polyline>
+      </svg>
+    </button>
+  </div>
+  <div class="hint">Text ke liye Claude AI, image ke liye free image-generation service istemal hoti hai.</div>
+</div>
+
+<script>
+const chat = document.getElementById('chat');
+const empty = document.getElementById('empty');
+const input = document.getElementById('msgInput');
+const sendBtn = document.getElementById('sendBtn');
+const clearBtn = document.getElementById('clearBtn');
+const attachBtn = document.getElementById('attachBtn');
+const fileInput = document.getElementById('fileInput');
+const attachPreview = document.getElementById('attachPreview');
+const attachThumb = document.getElementById('attachThumb');
+const attachName = document.getElementById('attachName');
+const removeAttach = document.getElementById('removeAttach');
+
+let history = []; // {role, content}
+let attachedImage = null; // {base64, mediaType, name}
+
+attachBtn.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    attachedImage = {
+      base64: reader.result.split(',')[1],
+      mediaType: file.type,
+      name: file.name
+    };
+    attachThumb.src = reader.result;
+    attachName.textContent = file.name;
+    attachPreview.style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+});
+
+removeAttach.addEventListener('click', () => {
+  attachedImage = null;
+  fileInput.value = '';
+  attachPreview.style.display = 'none';
+});
+
+// auto-grow textarea
+input.addEventListener('input', () => {
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+});
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+sendBtn.addEventListener('click', sendMessage);
+clearBtn.addEventListener('click', () => {
+  history = [];
+  chat.innerHTML = '';
+  chat.appendChild(empty);
+});
+
+function addBubble(role, contentNode) {
+  if (empty.parentNode) empty.remove();
+  const row = document.createElement('div');
+  row.className = 'row ' + role;
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.appendChild(contentNode);
+  row.appendChild(bubble);
+  chat.appendChild(row);
+  chat.scrollTop = chat.scrollHeight;
+  return bubble;
+}
+
+function textNode(text) {
+  const d = document.createElement('div');
+  d.textContent = text;
+  return d;
+}
+
+function isImageRequest(text) {
+  const t = text.toLowerCase();
+  const keywords = ['image banao','image bnao','tasveer','tasvir','picture banao','photo banao','draw ','generate image','banado image','image generate','pic banao','image bana do'];
+  return keywords.some(k => t.includes(k));
+}
+
+function extractImagePrompt(text) {
+  // remove common trigger phrases, keep the rest as the prompt
+  let p = text;
+  const triggers = ['image banao','image bnao ka','image bnao','banado image','image generate karo','image generate','generate image','tasveer banao','tasveer bnao','tasvir banao','picture banao','photo banao','pic banao','draw','image bana do','banao'];
+  triggers.forEach(t => { p = p.replace(new RegExp(t, 'ig'), ''); });
+  p = p.replace(/^[:\-\s]+/, '').trim();
+  return p.length > 2 ? p : 'a beautiful artistic illustration';
+}
+
+async function sendMessage() {
+  const text = input.value.trim();
+  const hasImage = !!attachedImage;
+  if (!text && !hasImage) return;
+
+  const currentImage = attachedImage;
+  input.value = '';
+  input.style.height = 'auto';
+
+  // Build the user bubble (text + attached image preview, if any)
+  const userWrap = document.createElement('div');
+  if (currentImage) {
+    const thumb = document.createElement('img');
+    thumb.src = 'data:' + currentImage.mediaType + ';base64,' + currentImage.base64;
+    userWrap.appendChild(thumb);
+  }
+  if (text) userWrap.appendChild(textNode(text));
+  addBubble('user', userWrap);
+
+  attachedImage = null;
+  fileInput.value = '';
+  attachPreview.style.display = 'none';
+  sendBtn.disabled = true;
+
+  if (currentImage) {
+    // Send text + image together to Claude for analysis
+    const loading = document.createElement('div');
+    const dots = document.createElement('div');
+    dots.className = 'typing';
+    dots.innerHTML = '<span></span><span></span><span></span>';
+    loading.appendChild(dots);
+    const bubbleEl = addBubble('bot', loading);
+
+    history.push({
+      role: 'user',
+      content: [
+        { type: 'image', source: { type: 'base64', media_type: currentImage.mediaType, data: currentImage.base64 } },
+        { type: 'text', text: text || 'Is image ke baare mein bataein.' }
+      ]
+    });
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          system: "Tum 'MIAN x NIAZI' naam ke AI assistant ho. User jis zuban (Urdu, Roman Urdu, English, ya kisi bhi mix) mein baat kare, hamesha usi zuban mein jawab do. Dost jaisa, seedha, madadgar lehja rakho.",
+          messages: history
+        })
+      });
+      const data = await response.json();
+      const replyText = (data.content || [])
+        .map(b => b.type === 'text' ? b.text : '')
+        .filter(Boolean)
+        .join('\n') || 'Maazrat, jawab nahi mil saka.';
+      bubbleEl.innerHTML = '';
+      bubbleEl.appendChild(textNode(replyText));
+      history.push({role:'assistant', content:replyText});
+    } catch (err) {
+      bubbleEl.innerHTML = '';
+      bubbleEl.appendChild(textNode('Connection mein masla aa gaya. Dobara koshish karein.'));
+    }
+    sendBtn.disabled = false;
+    return;
+  }
+
+  if (isImageRequest(text)) {
+    const prompt = extractImagePrompt(text);
+    const loading = document.createElement('div');
+    const dots = document.createElement('div');
+    dots.className = 'typing';
+    dots.innerHTML = '<span></span><span></span><span></span>';
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = 'Image ban rahi hai...';
+    loading.appendChild(label);
+    loading.appendChild(dots);
+    const bubbleEl = addBubble('bot', loading);
+
+    try {
+      const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=768&height=768&nologo=true&seed=' + Math.floor(Math.random()*100000);
+      const img = document.createElement('img');
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = url;
+      });
+      bubbleEl.innerHTML = '';
+      const lbl = document.createElement('div');
+      lbl.className = 'label';
+      lbl.textContent = 'Generated image';
+      bubbleEl.appendChild(lbl);
+      bubbleEl.appendChild(img);
+      history.push({role:'user', content:text});
+      history.push({role:'assistant', content:'[Generated an image for: ' + prompt + ']'});
+    } catch (err) {
+      bubbleEl.innerHTML = '';
+      bubbleEl.appendChild(textNode('Image generate nahi ho saki. Dobara koshish karein.'));
+    }
+    sendBtn.disabled = false;
+    return;
+  }
+
+  // Text response via Claude API
+  const loading = document.createElement('div');
+  const dots = document.createElement('div');
+  dots.className = 'typing';
+  dots.innerHTML = '<span></span><span></span><span></span>';
+  loading.appendChild(dots);
+  const bubbleEl = addBubble('bot', loading);
+
+  history.push({role:'user', content:text});
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: "Tum 'MIAN x NIAZI' naam ke AI assistant ho. User jis zuban (Urdu, Roman Urdu, English, ya kisi bhi mix) mein baat kare, hamesha usi zuban mein jawab do. Dost jaisa, seedha, madadgar lehja rakho.",
+        messages: history
+      })
+    });
+    const data = await response.json();
+    const replyText = (data.content || [])
+      .map(b => b.type === 'text' ? b.text : '')
+      .filter(Boolean)
+      .join('\n') || 'Maazrat, jawab nahi mil saka.';
+
+    bubbleEl.innerHTML = '';
+    bubbleEl.appendChild(textNode(replyText));
+    history.push({role:'assistant', content:replyText});
+  } catch (err) {
+    bubbleEl.innerHTML = '';
+    bubbleEl.appendChild(textNode('Connection mein masla aa gaya. Dobara koshish karein.'));
+  }
+
+  sendBtn.disabled = false;
+}
+</script>
+</body>
+</html>
